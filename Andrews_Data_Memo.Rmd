@@ -1,0 +1,26 @@
+---
+title: "Final Project Data Memo"
+author: "Elena Andrews"
+date: "5/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Source
+
+For my final project, I have decided to use data on police killings in America in 2015 from FiveThirtyEight. This data-set was used in their article "Where Police Have Killed Americans in 2015." It contains 34 variables and 467 observations. Each observation represents a different person who was murdered by the police in 2015. Variables include the name of the person who was killed, their age, gender, and race, as well as the month and day of their murder, the city and state they were murdered in, and demographic information about the census tract in which they were murdered, including median household income and unemployment rate among other things.
+
+I obtained the data from the FiveThirtyEight github repository. The journalists and data-scientists at FiveThirtyEight in turn compiled this data from two different sources: the Guardian's data-base on police murders in the United States and the 2015 American Community Survey conducted by the United States Census Bureau.
+
+**FiveThirtyEight GitHub Repository:** <https://github.com/fivethirtyeight/data/tree/master/police-killings>
+
+**The Guardian's "The Counted: People Killed by police in the US":**
+
+<https://www.theguardian.com/us-news/ng-interactive/2015/jun/01/the-counted-map-us-police-killings>
+
+**2015 American Community Survey:**
+
+<https://www.census.gov/acs/www/data/data-tables-and-tools/data-profiles/2015/>
