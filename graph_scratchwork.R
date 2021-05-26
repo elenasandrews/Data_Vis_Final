@@ -14,6 +14,15 @@ police <- read_csv("data/police_killings.csv") %>%
     share_hispanic = as.numeric(share_hispanic)
   )
 
+us_map <- maps::map("state", plot = FALSE, fill = FALSE) %>%
+  st_as_sf() %>% 
+  mutate(
+    county = str_remove(ID, ".*,") %>% str_trim(),
+    state  = str_remove(ID, ",.*") %>% str_trim()
+    ) %>% 
+  select(-ID) %>% 
+  rename(geometry = geom)
+
 # Create Map --------------------------------------------------------------
 # get US data from tigris
 us <- states(cb = TRUE) %>% 
