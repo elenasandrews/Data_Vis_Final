@@ -11,17 +11,9 @@ police <- read_csv("data/police_killings.csv") %>%
   mutate(
     share_white = as.numeric(share_white),
     share_black = as.numeric(share_black),
-    share_hispanic = as.numeric(share_hispanic)
+    share_hispanic = as.numeric(share_hispanic),
+    age = as.numeric(age)
   )
-
-us_map <- maps::map("state", plot = FALSE, fill = FALSE) %>%
-  st_as_sf() %>% 
-  mutate(
-    county = str_remove(ID, ".*,") %>% str_trim(),
-    state  = str_remove(ID, ",.*") %>% str_trim()
-    ) %>% 
-  select(-ID) %>% 
-  rename(geometry = geom)
 
 # Create Map --------------------------------------------------------------
 # get US data from tigris
@@ -31,12 +23,23 @@ us <- states(cb = TRUE) %>%
   mutate(state_fp = as.numeric(state_fp))
   
 # join with police data
-police <- left_join(x = police, y = us, by = "state_fp")
+police_geometry <- left_join(x = police, y = us, by = "state_fp")
 
-ggplot(police) +
+# create state_name_widget
+state_name_widget <- police_geometry %>% 
+  mutate(name.y = as_factor(name.y)) %>% 
+  pull(name.y) %>% 
+  unique() %>% 
+  str_to_title() 
+
+# try one state graph
+police_geometry %>% 
+  filter(state == "CA") %>% 
+  ggplot() +
   geom_sf(aes(geometry = geometry)) +
-  geom_point(aes(x = longitude, y = latitude)) +
-  coord_sf()
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity)) +
+  coord_sf() +
+  theme_void()
 
 
 # graph

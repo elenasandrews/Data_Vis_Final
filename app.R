@@ -45,6 +45,11 @@ ui <- fluidPage(
       # Tab One: Drop-Down Menu Input, Map Output
       tabsetPanel(
         tabPanel(title = "Map",
+                 sliderInput("state",
+                             label = "Select map to view",
+                             choices = state_name_widget,
+                             value = "Iowa"
+                 ),
                  plotOutput("map")),
         # Tab Two: Drop-Down Menu Input, Bar Graph Output and
         # Slider Bar Input, Histogram Output
