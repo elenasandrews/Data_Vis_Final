@@ -45,10 +45,16 @@ ui <- fluidPage(
       # Tab One: Drop-Down Menu Input, Map Output
       tabsetPanel(
         tabPanel(title = "Map",
-                 sliderInput("state",
+                 br(),
+                 br(),
+                 selectInput("state",
                              label = "Select map to view",
-                             choices = state_name_widget,
-                             value = "Iowa"
+                             choices = c("West", 
+                                         "Southwest", 
+                                         "Southeast", 
+                                         "Midwest",
+                                         "Northeast"),
+                             selected = "Midwest"
                  ),
                  plotOutput("map")),
         # Tab Two: Drop-Down Menu Input, Bar Graph Output and
@@ -209,35 +215,35 @@ server <- function(input, output) {
       )
   })
   
+  # create reactive object to map radio button options to variables in police
+  size <- reactive({
+    switch(input$census_var,
+           "Percent non-Hispanic White" = police$share_white,
+           "Percent Black" = police$share_black,
+           "Percent Hispanic/Latinx" = police$share_hispanic
+    )
+  })
+  
+  # create reactive object to map radio button options to fill colors
+  fill_color <- reactive({
+    switch(input$census_var,
+           "Percent non-Hispanic White" = "#630436",
+           "Percent Black" = "#228B22",
+           "Percent Hispanic/Latinx" = "#00316E"
+    )
+  })
+  
+  # create reactive object to map radio button options to legend titles
+  legend_title <- reactive({
+    switch(input$census_var,
+           "Percent non-Hispanic White" = "% of victim's\ncensus tract\npopulation that is non-Hispanic White",
+           "Percent Black" = "% of victim's\ncensus tract\npop that is Black",
+           "Percent Hispanic/Latinx" = "% of victim's\ncensus tract\npop that is Hispanic/Latinx"
+    )
+  })
+  
   # Create scatterplot output
   output$scatterplot <- renderPlot({
-    
-    # create reactive object to map radio button options to variables in police
-    size <- reactive({
-      switch(input$census_var,
-             "Percent non-Hispanic White" = police$share_white,
-             "Percent Black" = police$share_black,
-             "Percent Hispanic/Latinx" = police$share_hispanic
-             )
-    })
-    
-    # create reactive object to map radio button options to fill colors
-    fill_color <- reactive({
-      switch(input$census_var,
-             "Percent non-Hispanic White" = "#228B22",
-             "Percent Black" = "#630436",
-             "Percent Hispanic/Latinx" = "#00316E"
-             )
-    })
-    
-    # create reactive object to map radio button options to legend titles
-    legend_title <- reactive({
-      switch(input$census_var,
-             "Percent non-Hispanic White" = "% of victim's\ncensus tract\npopulation that is non-Hispanic White",
-             "Percent Black" = "% of victim's\ncensus tract\npop that is Black",
-             "Percent Hispanic/Latinx" = "% of victim's\ncensus tract\npop that is Hispanic/Latinx"
-             )
-    })
     
     # create graph
     ggplot(police, aes(x = h_income, y = college, size = size())) +
@@ -266,6 +272,12 @@ server <- function(input, output) {
         plot.title = element_text(size = 16, face = "bold", hjust = 0.5)
       )
   })
+  
+  # create map output 
+  ouput$map <- renderPlot({
+    
+  })
+  
   
 }
 

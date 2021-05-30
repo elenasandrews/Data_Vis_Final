@@ -5,15 +5,34 @@ library(tigris)
 library(maps)
 library(sf)
 library(janitor)
+library(rgeos)
+# install.packages("devtools")
+# devtools::install_github("UrbanInstitute/urbnmapr")
+library(urbnmapr)
 
 # Load Data ---------------------------------------------------------------
+# load police data
 police <- read_csv("data/police_killings.csv") %>% 
   mutate(
     share_white = as.numeric(share_white),
     share_black = as.numeric(share_black),
     share_hispanic = as.numeric(share_hispanic),
-    age = as.numeric(age)
+    age = as.numeric(age),
+    state_fp = replace(state_fp, state == "NY", 36),
+    latitude = replace(latitude, city == "Rochester", 43.14785),
+    longitude = replace(longitude, city == "Rochester", -77.63095)
   )
+
+# load US income data
+load(file = "data/US_income copy.rda")
+
+# Rename state name variable
+US_income <- US_income %>% 
+  rename(state = name)
+
+# load state names data
+state_names <- read_csv(file = "data/state_names.csv") %>% 
+  clean_names()
 
 # Create Map --------------------------------------------------------------
 # get US data from tigris
@@ -22,8 +41,24 @@ us <- states(cb = TRUE) %>%
   rename(state_fp = statefp) %>% 
   mutate(state_fp = as.numeric(state_fp))
   
-# join with police data
-police_geometry <- left_join(x = police, y = us, by = "state_fp")
+# join tigris data with police data
+police_geometry <- full_join(x = police, y = us, by = "state_fp")
+
+# join US income data with state data
+US_income <- US_income %>% 
+  left_join(x = US_income, y = state_names, by = "state")
+
+# join police data with US_income
+police_US <- left_join(x = police, y = US_income, by = "code")
+
+
+# get data  from urbnmapr
+states_sf <- get_urbn_map("states", sf = TRUE)  %>% 
+  rename(code = state_abbv)
+
+# join states_sf with police data
+police_states <- full_join(x = police, y = states_sf, by = "code")
+
 
 # create state_name_widget
 state_name_widget <- police_geometry %>% 
@@ -32,22 +67,341 @@ state_name_widget <- police_geometry %>%
   unique() %>% 
   str_to_title() 
 
-# try one state graph
+# try one state graph (with data from tigris)
 police_geometry %>% 
-  filter(state == "CA") %>% 
+  filter(code == "IN") %>% 
   ggplot() +
   geom_sf(aes(geometry = geometry)) +
   geom_point(aes(x = longitude, y = latitude, color = raceethnicity)) +
   coord_sf() +
   theme_void()
 
-
-# graph
-ggplot(data = america) +
-  geom_sf() +
+# try two state graphs
+police_geometry %>% 
+  filter(state != "AK" | state != "HI") %>% 
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity)) +
   coord_sf() +
-  geom_point(data = police, mapping = aes(x = longitude, y = latitude))
+  theme_void()
 
+# try all us (with data from tigris)
+ggplot(data = us) +
+  geom_sf(aes(geometry = geometry)) +
+  geom_point(data = police, aes(x = longitude, y = latitude)) +
+  coord_sf() +
+  theme_void()
+  
+# graph all us (with data from tigris)
+police_geometry %>% 
+  filter(code == "CA") %>% 
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  coord_sf() +
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity))
+
+# try all us (with data from urbnmapr)
+ggplot(data = states_sf) +
+  geom_sf(aes(geometry = geometry)) +
+  geom_point(data = police, aes(x = longitude, y = latitude))
+
+# create data-set of cities in west
+west_cities <- tribble(
+  ~city, ~lat, ~lon,
+  #----|-----|-----|
+  "San Francisco", 37.7749, -122.4194,
+  "Los Angeles", 34.0522, -118.2437,
+  "Denver", 39.7392, -104.9903,
+  "Salt Lake City", 40.7608, -111.8910,
+  "Portland", 45.5051, -122.6750,
+  "Seattle", 47.6062, -122.3321
+)
+
+
+# try west region with tigris data
+police_geometry %>% 
+  filter(state %in% c("CA", "OR", "WA", "NV", "UT", "CO", "MT", "ID", "WY")) %>% 
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  coord_sf() +
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
+  theme_void() +
+  scale_color_brewer(palette = "Set1",
+                     limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
+  labs(
+    title = "Locations of Police Killings in West",
+    color = "Race of\nVictim",
+    caption = "Each point represents one victim, though note that some points are plotted on top of one another"
+  ) +
+  annotate(
+    geom = "text",
+    x = -123.5, y = 35,
+    label = "San\nFrancisco"
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -123, y = 35, 
+    xend = -122.4194, yend = 37.7749, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -121.5, y = 33,
+    label = "Los\nAngeles"
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -121, y = 33, 
+    xend = -118.2437, yend = 34.0522, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -102, y = 43,
+    label = "Denver"
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -102, y = 42.7, 
+    xend = -104.9903, yend = 39.7392, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -112, y = 34,
+    label = "Las Vegas"
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -113, y = 34, 
+    xend = -115.1398, yend = 36.1699, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+
+# try southwest region with tigris data
+police_geometry %>% 
+  filter(state %in% c("AZ", "NM", "TX", "OK")) %>% 
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  coord_sf() +
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
+  theme_void() +
+  scale_color_brewer(palette = "Set1",
+                     limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
+  labs(
+    title = "Locations of Police Killings in Southwest",
+    color = "Race of\nVictim",
+    caption = "Each point represents one victim, though note that some points are plotted on top of one another"
+  )  +
+  annotate(
+    geom = "text",
+    x = -114, y = 30.7,
+    label = "Phoenix"
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -114, y = 31, 
+    xend = -112.0740, yend = 33.4484, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -94.5, y = 26.8,
+    label = "Houston"
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -94.5, y = 27, 
+    xend = -95.3698, yend = 29.7604, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -98, y = 31,
+    label = "Dallas",
+    hjust = 1
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -98, y = 31, 
+    xend = -96.7970, yend = 32.7767, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -97, y = 38,
+    label = "Oklahoma City",
+    hjust = 0
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -97, y = 38, 
+    xend = -97.5164, yend = 35.4676, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+
+# try midwest region with tigris data
+police_geometry %>% 
+  filter(state %in% c("ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "IN", "MI", "OH")) %>% 
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  coord_sf() +
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
+  theme_void() +
+  scale_color_brewer(palette = "Set1",
+                     limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
+  labs(
+    title = "Locations of Police Killings in Midwest",
+    color = "Race of\nVictim",
+    caption = "Each point represents one victim, though note that some points are plotted on top of one another"
+  ) +
+  annotate(
+    geom = "text",
+    x = -98, y = 45,
+    label = "Minneapolis",
+    hjust = 1
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -98, y = 45, 
+    xend = -93.2650, yend = 44.9778, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -88, y = 41,
+    label = "Chicago",
+    hjust = 1
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -88, y = 41, 
+    xend = -87.6298, yend = 41.8781, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+
+# try southeast region with tigris data
+police_geometry %>% 
+  filter(state %in% c("AR", "LA", "MS", "AL", "FL", "TN", "KY", "GA", "SC", "NC", "VA", "WV")) %>% 
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  coord_sf() +
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
+  theme_void() +
+  scale_color_brewer(palette = "Set1",
+                     limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
+  labs(
+    title = "Locations of Police Killings in Southeast",
+    color = "Race of\nVictim",
+    caption = "Each point represents one victim, though note that some points are plotted on top of one another"
+  ) +
+  annotate(
+    geom = "text",
+    x = -84, y = 32.6,
+    label = "Atlanta",
+    hjust = .5
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -84, y = 32.6, 
+    xend = -84.3880, yend = 33.7490, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -79, y = 28,
+    label = "Orlando",
+    hjust = 0
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -79, y = 28, 
+    xend = -81.15, yend = 28.5383, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+
+# try northeast region with tigris data
+police_geometry %>% 
+  filter(state %in% c("NY", "PA", "MD", "DC", "DE", "NJ", "CT", "MA", "NH", "VT", "ME")) %>%
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  coord_sf() +
+  geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
+  theme_void() +
+  scale_color_brewer(palette = "Set1",
+                     limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
+  labs(
+    title = "Locations of Police Killings in Northeast",
+    color = "Race of\nVictim",
+    caption = "Each point represents one victim, though note that some points are plotted on top of one another"
+  ) +
+  annotate(
+    geom = "text",
+    x = -72, y = 39.5,
+    label = "New York City",
+    hjust = 0
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -72, y = 39.5, 
+    xend = -74.0060, yend = 40.7128, 
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  annotate(
+    geom = "text",
+    x = -78, y = 38,
+    label = "Baltimore",
+    hjust = 1
+  ) +
+  annotate(
+    geom = "curve", 
+    x = -78, y = 38, 
+    xend = -76.6122, yend = 39.2904,
+    curvature = .2, 
+    arrow = arrow(length = unit(2, "mm")),
+    color = "black"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
 
 # Bargraph of Race --------------------------------------------------------
 police %>% 
