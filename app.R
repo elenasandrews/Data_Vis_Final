@@ -47,7 +47,7 @@ ui <- fluidPage(
                  br(),
                  br(),
                  selectInput("region",
-                             label = "Select map to view",
+                             label = "Select regional map to view:",
                              choices = c("West", 
                                          "Southwest", 
                                          "Southeast", 
@@ -59,7 +59,15 @@ ui <- fluidPage(
                  br(),
                  br(),
                  p(strong("Note to viewer:"),
-                   "Please be patient, maps take a moment to load.")),
+                   "Please be patient, maps take a moment to load."),
+                 br(),
+                 br(),
+                 uiOutput("cities"),
+                 br(),
+                 tableOutput("city_dat"),
+                 br(),
+                 br(),
+                 br()),
         # Tab Two: Drop-Down Menu Input, Bar Graph Output and
         # Slider Bar Input, Histogram Output
         tabPanel(title = "Demographics",
@@ -101,6 +109,364 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram  ----------------------
 server <- function(input, output) {
+  # create map output 
+  output$map <- renderPlot({
+    if (input$region == "West"){
+     police_geometry %>% 
+        filter(state %in% c("CA", "OR", "WA", "NV", "UT", "CO", "MT", "ID", "WY")) %>% 
+        ggplot() +
+        geom_sf(aes(geometry = geometry)) +
+        coord_sf() +
+        geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
+                   alpha = 0.95, size = 3) +
+        theme_void() +
+        scale_color_brewer(
+          palette = "Set1",
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        scale_shape_manual(
+          values = c(4, 6, 5, 0, 2, 1),
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        labs(
+          title = "Locations of Police Killings in West",
+          color = "Race of\nVictim",
+          shape = "Race of\nVictim",
+          caption = "Each shape represents one victim"
+        ) +
+        annotate(
+          geom = "text",
+          x = -123.5, y = 35,
+          label = "San\nFrancisco"
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -123, y = 35, 
+          xend = -122.4194, yend = 37.7749, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -121.5, y = 33,
+          label = "Los\nAngeles"
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -121, y = 33, 
+          xend = -118.2437, yend = 34.0522, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -102, y = 43,
+          label = "Denver"
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -102, y = 42.7, 
+          xend = -104.9903, yend = 39.7392, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -112, y = 34,
+          label = "Las Vegas"
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -113, y = 34, 
+          xend = -115.1398, yend = 36.1699, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        theme(
+          plot.title = element_text(face = "bold", hjust = 0.5)
+        )
+      
+      girafe(ggobj  = west_plot)
+      
+    } else if (input$region == "Southwest") {
+      police_geometry %>% 
+        filter(state %in% c("AZ", "NM", "TX", "OK")) %>% 
+        ggplot() +
+        geom_sf(aes(geometry = geometry)) +
+        coord_sf() +
+        geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
+                   alpha = 0.95, size = 3) +
+        theme_void() +
+        scale_color_brewer(
+          palette = "Set1",
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        scale_shape_manual(
+          values = c(4, 6, 5, 0, 2, 1),
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        labs(
+          title = "Locations of Police Killings in Southwest",
+          color = "Race of\nVictim",
+          shape = "Race of\nVictim",
+          caption = "Each shape represents one victim"
+        )  +
+        annotate(
+          geom = "text",
+          x = -114, y = 30.7,
+          label = "Phoenix"
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -114, y = 31, 
+          xend = -112.0740, yend = 33.4484, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -94.5, y = 26.8,
+          label = "Houston"
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -94.5, y = 27, 
+          xend = -95.3698, yend = 29.7604, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -98, y = 31,
+          label = "Dallas",
+          hjust = 1
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -98, y = 31, 
+          xend = -96.7970, yend = 32.7767, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -97, y = 38,
+          label = "Oklahoma City",
+          hjust = 0
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -97, y = 38, 
+          xend = -97.5164, yend = 35.4676, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        theme(
+          plot.title = element_text(face = "bold", hjust = 0.5)
+        )
+    } else if (input$region == "Southeast") {
+      police_geometry %>% 
+        filter(state %in% c("AR", "LA", "MS", "AL", "FL", "TN", "KY", "GA", "SC", "NC", "VA", "WV")) %>% 
+        ggplot() +
+        geom_sf(aes(geometry = geometry)) +
+        coord_sf() +
+        geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
+                   alpha = 0.95, size = 3) +
+        theme_void() +
+        scale_color_brewer(
+          palette = "Set1",
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        scale_shape_manual(
+          values = c(4, 6, 5, 0, 2, 1),
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        labs(
+          title = "Locations of Police Killings in Southeast",
+          color = "Race of\nVictim",
+          shape = "Race of\nVictim",
+          caption = "Each shape represents one victim"
+        ) +
+        annotate(
+          geom = "text",
+          x = -84, y = 32.6,
+          label = "Atlanta",
+          hjust = .5
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -84, y = 32.6, 
+          xend = -84.3880, yend = 33.7490, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -79, y = 28,
+          label = "Orlando",
+          hjust = 0
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -79, y = 28, 
+          xend = -81.15, yend = 28.5383, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        theme(
+          plot.title = element_text(face = "bold", hjust = 0.5)
+        )
+    } else if (input$region == "Midwest") {
+      police_geometry %>% 
+        filter(state %in% c("ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "IN", "MI", "OH")) %>% 
+        ggplot() +
+        geom_sf(aes(geometry = geometry)) +
+        coord_sf() +
+        geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
+                   alpha = 0.95, size = 3) +
+        theme_void() +
+        scale_color_brewer(
+          palette = "Set1",
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        scale_shape_manual(
+          values = c(4, 6, 5, 0, 2, 1),
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        labs(
+          title = "Locations of Police Killings in Midwest",
+          color = "Race of\nVictim",
+          shape = "Race of\nVictim",
+          caption = "Each shape represents one victim"
+        ) +
+        annotate(
+          geom = "text",
+          x = -98, y = 45,
+          label = "Minneapolis",
+          hjust = 1
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -98, y = 45, 
+          xend = -93.2650, yend = 44.9778, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -88, y = 41,
+          label = "Chicago",
+          hjust = 1
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -88, y = 41, 
+          xend = -87.6298, yend = 41.8781, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        theme(
+          plot.title = element_text(face = "bold", hjust = 0.5)
+        )
+    } else {
+      police_geometry %>% 
+        filter(state %in% c("NY", "PA", "MD", "DC", "DE", "NJ", "CT", "MA", "NH", "VT", "ME")) %>%
+        ggplot() +
+        geom_sf(aes(geometry = geometry)) +
+        coord_sf() +
+        geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
+                   alpha = 0.95, size = 3) +
+        theme_void() +
+        scale_color_brewer(
+          palette = "Set1",
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        scale_shape_manual(
+          values = c(4, 6, 5, 0, 2, 1),
+          limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+        ) +
+        labs(
+          title = "Locations of Police Killings in Northeast",
+          color = "Race of\nVictim",
+          shape = "Race of\nVictim",
+          caption = "Each shape represents one victim"
+        ) +
+        annotate(
+          geom = "text",
+          x = -72, y = 39.5,
+          label = "New York City",
+          hjust = 0
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -72, y = 39.5, 
+          xend = -74.0060, yend = 40.7128, 
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        annotate(
+          geom = "text",
+          x = -78, y = 38,
+          label = "Baltimore",
+          hjust = 1
+        ) +
+        annotate(
+          geom = "curve", 
+          x = -78, y = 38, 
+          xend = -76.6122, yend = 39.2904,
+          curvature = .2, 
+          arrow = arrow(length = unit(2, "mm")),
+          color = "black"
+        ) +
+        theme(
+          plot.title = element_text(face = "bold", hjust = 0.5)
+        )
+    }
+  })
+  
+  # create a reactive object changing region label to a vector of state abbreviations
+  region <- reactive({switch(input$region,
+                   "West" = c("CA", "OR", "WA", "NV", "UT", "CO", "MT", "ID", "WY"),
+                   "Southwest" = c("AZ", "NM", "TX", "OK"),
+                   "Southeast" = c("AR", "LA", "MS", "AL", "FL", "TN", "KY", "GA", "SC", "NC", "VA", "WV"),
+                   "Midwest" = c("ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "IN", "MI", "OH"),
+                   "Northeast" = c("NY", "PA", "MD", "DC", "DE", "NJ", "CT", "MA", "NH", "VT", "ME"))
+    })
+  
+  # create select bar input of cities, based on the region selected
+  output$cities <- renderUI({
+    cities <- police %>% 
+      filter(state %in% region()) %>% 
+      distinct(city)
+    
+    cities <- cities$city
+    
+    selectInput("city_names", 
+                label = "Select a city within the region choosen above to view information about
+                victim(s) in that city:",
+                choices = cities)
+  })
+  
+  # create table of information about cities
+  output$city_dat <- renderTable({
+    police %>% 
+      filter(city == input$city_names) %>% 
+      select(name, city, state, month, day, year, age, gender, raceethnicity)
+  })
+  
   
   # create data-set of counts of levels of gender
   # for labels on gender bargraph
@@ -275,293 +641,7 @@ server <- function(input, output) {
         plot.title = element_text(size = 16, face = "bold", hjust = 0.5)
       )
   })
-  
-  # create map output 
-  output$map <- renderPlot({
-    if (input$region == "West"){
-      police_geometry %>% 
-        filter(state %in% c("CA", "OR", "WA", "NV", "UT", "CO", "MT", "ID", "WY")) %>% 
-        ggplot() +
-        geom_sf(aes(geometry = geometry)) +
-        coord_sf() +
-        geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
-        theme_void() +
-        scale_color_brewer(palette = "Set1",
-                           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
-        labs(
-          title = "Locations of Police Killings in West",
-          color = "Race of\nVictim",
-          caption = "Each point represents one victim, though note that some points are plotted on top of one another"
-        ) +
-        annotate(
-          geom = "text",
-          x = -123.5, y = 35,
-          label = "San\nFrancisco"
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -123, y = 35, 
-          xend = -122.4194, yend = 37.7749, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -121.5, y = 33,
-          label = "Los\nAngeles"
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -121, y = 33, 
-          xend = -118.2437, yend = 34.0522, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -102, y = 43,
-          label = "Denver"
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -102, y = 42.7, 
-          xend = -104.9903, yend = 39.7392, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -112, y = 34,
-          label = "Las Vegas"
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -113, y = 34, 
-          xend = -115.1398, yend = 36.1699, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        theme(
-          plot.title = element_text(face = "bold", hjust = 0.5)
-        )
-    } else if (input$region == "Southwest") {
-      police_geometry %>% 
-        filter(state %in% c("AZ", "NM", "TX", "OK")) %>% 
-        ggplot() +
-        geom_sf(aes(geometry = geometry)) +
-        coord_sf() +
-        geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
-        theme_void() +
-        scale_color_brewer(palette = "Set1",
-                           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
-        labs(
-          title = "Locations of Police Killings in Southwest",
-          color = "Race of\nVictim",
-          caption = "Each point represents one victim, though note that some points are plotted on top of one another"
-        )  +
-        annotate(
-          geom = "text",
-          x = -114, y = 30.7,
-          label = "Phoenix"
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -114, y = 31, 
-          xend = -112.0740, yend = 33.4484, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -94.5, y = 26.8,
-          label = "Houston"
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -94.5, y = 27, 
-          xend = -95.3698, yend = 29.7604, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -98, y = 31,
-          label = "Dallas",
-          hjust = 1
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -98, y = 31, 
-          xend = -96.7970, yend = 32.7767, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -97, y = 38,
-          label = "Oklahoma City",
-          hjust = 0
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -97, y = 38, 
-          xend = -97.5164, yend = 35.4676, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        theme(
-          plot.title = element_text(face = "bold", hjust = 0.5)
-        )
-    } else if (input$region == "Southeast") {
-      police_geometry %>% 
-        filter(state %in% c("AR", "LA", "MS", "AL", "FL", "TN", "KY", "GA", "SC", "NC", "VA", "WV")) %>% 
-        ggplot() +
-        geom_sf(aes(geometry = geometry)) +
-        coord_sf() +
-        geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
-        theme_void() +
-        scale_color_brewer(palette = "Set1",
-                           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
-        labs(
-          title = "Locations of Police Killings in Southeast",
-          color = "Race of\nVictim",
-          caption = "Each point represents one victim, though note that some points are plotted on top of one another"
-        ) +
-        annotate(
-          geom = "text",
-          x = -84, y = 32.6,
-          label = "Atlanta",
-          hjust = .5
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -84, y = 32.6, 
-          xend = -84.3880, yend = 33.7490, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -79, y = 28,
-          label = "Orlando",
-          hjust = 0
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -79, y = 28, 
-          xend = -81.15, yend = 28.5383, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        theme(
-          plot.title = element_text(face = "bold", hjust = 0.5)
-        )
-    } else if (input$region == "Midwest") {
-      police_geometry %>% 
-        filter(state %in% c("ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "IN", "MI", "OH")) %>% 
-        ggplot() +
-        geom_sf(aes(geometry = geometry)) +
-        coord_sf() +
-        geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
-        theme_void() +
-        scale_color_brewer(palette = "Set1",
-                           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
-        labs(
-          title = "Locations of Police Killings in Midwest",
-          color = "Race of\nVictim",
-          caption = "Each point represents one victim, though note that some points are plotted on top of one another"
-        ) +
-        annotate(
-          geom = "text",
-          x = -98, y = 45,
-          label = "Minneapolis",
-          hjust = 1
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -98, y = 45, 
-          xend = -93.2650, yend = 44.9778, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -88, y = 41,
-          label = "Chicago",
-          hjust = 1
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -88, y = 41, 
-          xend = -87.6298, yend = 41.8781, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        theme(
-          plot.title = element_text(face = "bold", hjust = 0.5)
-        )
-    } else {
-      police_geometry %>% 
-        filter(state %in% c("NY", "PA", "MD", "DC", "DE", "NJ", "CT", "MA", "NH", "VT", "ME")) %>%
-        ggplot() +
-        geom_sf(aes(geometry = geometry)) +
-        coord_sf() +
-        geom_point(aes(x = longitude, y = latitude, color = raceethnicity), alpha = 0.5) +
-        theme_void() +
-        scale_color_brewer(palette = "Set1",
-                           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")) +
-        labs(
-          title = "Locations of Police Killings in Northeast",
-          color = "Race of\nVictim",
-          caption = "Each point represents one victim, though note that some points are plotted on top of one another"
-        ) +
-        annotate(
-          geom = "text",
-          x = -72, y = 39.5,
-          label = "New York City",
-          hjust = 0
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -72, y = 39.5, 
-          xend = -74.0060, yend = 40.7128, 
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        annotate(
-          geom = "text",
-          x = -78, y = 38,
-          label = "Baltimore",
-          hjust = 1
-        ) +
-        annotate(
-          geom = "curve", 
-          x = -78, y = 38, 
-          xend = -76.6122, yend = 39.2904,
-          curvature = .2, 
-          arrow = arrow(length = unit(2, "mm")),
-          color = "black"
-        ) +
-        theme(
-          plot.title = element_text(face = "bold", hjust = 0.5)
-        )
-    }
-  })
-  
-  
+
 }
 
 # Run the application --------------------------------------

@@ -25,3 +25,5 @@ us <- states(cb = TRUE) %>%
 # Join tigris data with police data ------------------------------------
 police_geometry <- full_join(x = police, y = us, by = "state_fp")
 
+
+
