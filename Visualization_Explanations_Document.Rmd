@@ -1,0 +1,28 @@
+---
+title: "Visualization Explanations"
+author: "Elena Andrews"
+date: "6/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This document answers the following question for each of the graphs present in my Shiny app: 
+
+> What is the core concept(s) or insight(s) into the data that you believe the visualization communicates?
+
+### Map and Accompanying Table
+
+### Bargraph of Race and Gender
+
+### Histogram of Age
+
+### Scatterplot of Percentage of College Graduates in Census Tract Population by Median Household Income of Census Tract
+
+### Bargraph of Cause of Death (by itself and with various different variables in the fill)
+
+

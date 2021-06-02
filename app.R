@@ -15,6 +15,7 @@ source(file = "data_processing.R")
 
 # Define UI for application that draws a histogram --------------------------
 ui <- fluidPage(
+  theme = bslib::bs_theme(bootswatch = "simplex"),
   
   # Add Title
   titlePanel("Deaths by the Police in the United States (January-June 2015)"),
@@ -24,11 +25,14 @@ ui <- fluidPage(
     # Sidebar for Introduction and Data Citation
     sidebarPanel(
       h2("Introduction"),
-      p("Police brutality has, unfortunately, been a persistent problem in contemporary America. In the first 6 months of 
-        2015 alone, 467 people were killed at the hands of police officers. This app provides
+      p("Police brutality and violence has, unfortunately, been a persistent problem in contemporary America. In the first 6 months of 
+        2015 alone",
+        em("467"),
+        "people were killed at the hands of police officers. This app provides
         detailed graphics and tables about those who were killed by police between January
         and June of 2015 in an attempt to raise awareness about police violence, 
         and bring the country closer to creating communities where all feel safe and welcome."),
+      div("To navigate through the sections of the app, click on the labeled tabs.", style = "color:red"),
       h2("Data"),
       p("The data used in this app was obtained from FiveThirtyEight, who utilized the data for their 2015 article", 
         em("Where Police Have Killed Americans in 2015."),
@@ -374,7 +378,8 @@ server <- function(input, output) {
           title = "Locations of Police Killings in Midwest",
           color = "Race of\nVictim",
           shape = "Race of\nVictim",
-          caption = "Each shape represents one victim"
+          caption = "Each shape represents one victim\nSouth Dakota and North Dakota absent because these states had no
+          police killings in 2015"
         ) +
         annotate(
           geom = "text",
@@ -428,7 +433,8 @@ server <- function(input, output) {
           title = "Locations of Police Killings in Northeast",
           color = "Race of\nVictim",
           shape = "Race of\nVictim",
-          caption = "Each shape represents one victim"
+          caption = "Each shape represents one victim\nVermont and Rhode Island absent because these states had no
+          police killings in 2015"
         ) +
         annotate(
           geom = "text",
