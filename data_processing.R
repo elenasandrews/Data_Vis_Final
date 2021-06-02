@@ -13,7 +13,8 @@ police <- read_csv("data/police_killings.csv") %>%
     age = as.numeric(age),
     state_fp = replace(state_fp, state == "NY", 36),
     latitude = replace(latitude, city == "Rochester", 43.14785),
-    longitude = replace(longitude, city == "Rochester", -77.63095)
+    longitude = replace(longitude, city == "Rochester", -77.63095),
+    city = replace(city, name == "Stanley Watson", "Canon City")
   )
 
 # Get US data from tigris ---------------------------------

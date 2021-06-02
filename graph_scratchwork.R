@@ -442,3 +442,140 @@ ggplot(police, aes(h_income, college, size = share_hispanic)) +
 ggplot(police, aes(h_income, college, fill = share_white)) +
   geom_hex()
 
+
+# Bargraph of Cause of Death ----------------------------------------------
+cause_counts <- police %>% 
+  count(cause)
+
+# Cause of Death by Itself
+ggplot(police, aes(fct_rev(fct_infreq(cause)))) +
+  geom_bar(aes(fill = cause), show.legend = FALSE) +
+  coord_flip() +
+  labs(
+    x = "Cause of Death",
+    y = "Number of Victims"
+  ) +
+  scale_fill_manual(
+    values = c("Gunshot" = "dark red", 
+               "Taser" = "black", 
+               "Death in custody" = "black", 
+               "Struck by vehicle" = "black",  
+               "Unknown" = "black")
+  ) +
+  geom_label(data = cause_counts, aes(label = n, y = n), show.legend = FALSE) +
+  theme_minimal() 
+
+# Cause of Death by Armed
+ggplot(police, aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    x = "Cause of Death",
+    y = "Percentage of Victims",
+    title = "Cause of Death By How Victim was Armed",
+    fill = "Weapon Carried\nby Victim"
+  ) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = .5)
+  )
+
+# Cause of Death by Race
+ggplot(police, aes(cause, fill = raceethnicity)) +
+  geom_bar(position = "fill") +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    x = "Cause of Death",
+    y = "Percentage of Victims",
+    title = "Cause of Death By Race of Victim",
+    fill = "Race"
+  ) +
+  scale_fill_brewer(palette = "Set1",
+                    limits = c("White", "Hispanic/Latino", "Black", "Native American", 
+                               "Unknown", "Asian/Pacific Islander")) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = .5)
+  )
+
+
+# Unused Bargraphs --------------------------------------------------------
+police %>% 
+  filter(raceethnicity == "Black") %>% 
+  ggplot(aes(cause)) +
+  geom_bar()
+
+police %>% 
+  filter(raceethnicity == "White") %>% 
+  ggplot(aes(cause)) +
+  geom_bar()
+
+police %>% 
+  filter(raceethnicity == "Hispanic/Latino") %>% 
+  ggplot(aes(cause)) +
+  geom_bar()
+
+ggplot(police, aes(armed)) +
+  geom_bar()
+
+ggplot(police, aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+ggplot(police, aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+ggplot(police, aes(cause, fill = raceethnicity)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+police %>% 
+  filter(raceethnicity == "White") %>% 
+  ggplot(aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip() +
+  scale_fill_manual(
+    values = c("#FF5354", "#BE8900", "#5BA700", "#18EE00", "#00BC7E", "#00A9ED", "#9B68FF")
+  )
+
+police %>% 
+  filter(raceethnicity == "Black") %>% 
+  ggplot(aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip() +
+  scale_fill_discrete(
+    limits = c("Firearm", "Knife", "No", "Non-Lethal Firearm", "Other", "Unknown", "Vehicle", "Disputed")
+  )
+
+police %>% 
+  filter(raceethnicity == "Asian/Pacific Islander") %>% 
+  ggplot(aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+police %>% 
+  filter(raceethnicity == "Hispanic/Latino") %>% 
+  ggplot(aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+police %>% 
+  filter(raceethnicity == "Native American") %>% 
+  ggplot(aes(cause, fill = armed)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+ggplot(police, aes(cause, fill = raceethnicity)) +
+  geom_bar(position = "dodge") +
+  coord_flip()
+
+ggplot(police, aes(cause, fill = raceethnicity)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+ggplot(police, aes(armed, fill = raceethnicity)) +
+  geom_bar(position = "fill") +
+  coord_flip()
+
+
