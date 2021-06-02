@@ -9,12 +9,16 @@ library(maps)
 library(sf)
 library(janitor)
 library(rgeos)
+# install.packages
+library(thematic)
+library(showtext)
 
 # Source Data Processing Script --------------------------------------
 source(file = "data_processing.R")
 
 # Define UI for application that draws a histogram --------------------------
 ui <- fluidPage(
+  # Add theme
   theme = bslib::bs_theme(bootswatch = "simplex"),
   
   # Add Title
@@ -529,9 +533,9 @@ server <- function(input, output) {
     # Code for graph if input$var is "Race"
     if(input$var == "Race"){
       # graph
-      ggplot(police, mapping = aes(fct_rev(fct_infreq(raceethnicity)), fill = raceethnicity)) +
+      ggplot(police, mapping = aes(fct_rev(fct_infreq(raceethnicity)))) +
         # get rid of legend
-        geom_bar(show.legend = FALSE) +
+        geom_bar(aes(fill = raceethnicity), show.legend = FALSE) +
         # flit axes
         coord_flip() +
         # add title, change x-axis label
@@ -554,8 +558,7 @@ server <- function(input, output) {
                   nudge_y = -3,
                   # change size
                   size = 4,
-                  # change color
-                  color = "white",
+                  # get rid of legend
                   show.legend = FALSE) +
         # add minimal theme
         theme_minimal()  +
@@ -566,9 +569,9 @@ server <- function(input, output) {
     # Code for Graph if input$var is "Gender"
     } else {
       # graph
-      ggplot(police, mapping = aes(fct_rev(fct_infreq(gender)), fill = gender)) +
+      ggplot(police, mapping = aes(fct_rev(fct_infreq(gender)))) +
         # get rid of legend
-        geom_bar(show.legend = FALSE) +
+        geom_bar(aes(fill = gender), show.legend = FALSE) +
         # flip axes
         coord_flip() +
         # add title, change x-axis title
@@ -587,8 +590,7 @@ server <- function(input, output) {
                   nudge_y = -9.5,
                   # change size
                   size = 4,
-                  # change color
-                  color = "white",
+                  # get rid of legend
                   show.legend = FALSE) +
         # add minimal theme
         theme_minimal()  +
@@ -616,6 +618,9 @@ server <- function(input, output) {
       geom_histogram(breaks = bin_breaks, 
                      color = "white",
                      fill = "#aa6c39") +
+      scale_x_continuous(
+        breaks = breaks_width(10)
+      ) +
       # add title and change axis labels
       labs(
         x = "Age",
@@ -693,13 +698,10 @@ server <- function(input, output) {
   
   # Create Cause of Death Barplot-----------------------------
   
-  # create a reactive object changing selected values
-  # of drop-down to variables in police
-  fill_var <- reactive({switch(input$fill_var,
-    "None" = NULL,
-    "Armed" = police$armed,
-    "Race" = police$raceethnicity
-  )})
+  # create data-set with counts of each level of 
+  # cause for labels on bargraph
+  cause_counts <- police %>% 
+    count(cause)
   
   # create output
   output$cause <- renderPlot({
