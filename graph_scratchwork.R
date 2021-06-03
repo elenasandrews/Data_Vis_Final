@@ -578,4 +578,23 @@ ggplot(police, aes(armed, fill = raceethnicity)) +
   geom_bar(position = "fill") +
   coord_flip()
 
-
+ggplot(data = police, aes(h_income, fill = raceethnicity, color = raceethnicity)) +
+  geom_density(alpha = 0.2) +
+  scale_x_continuous(
+    labels = label_comma()
+  ) +
+  scale_color_brewer(
+    palette = "Set1",
+    limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+  ) +
+  scale_fill_brewer(
+    palette = "Set1",
+    limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+  ) +
+  theme_minimal() +
+  labs(
+    x = "median household income of census tract (dollars)",
+    fill = "Race of Victim",
+    color = "Race of Victim",
+    title = "Income of Census Tract by Race of Victim"
+  ) 

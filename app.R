@@ -22,7 +22,7 @@ ui <- fluidPage(
   theme = bslib::bs_theme(bootswatch = "simplex"),
   
   # Add Title
-  titlePanel("Deaths by the Police in the United States (January-June 2015)"),
+  titlePanel("Murders by the Police in the United States (January-June 2015)"),
   
   # Add Main Interface
   sidebarLayout(
@@ -51,7 +51,7 @@ ui <- fluidPage(
     mainPanel(
       # Tab One: Drop-Down Menu Input, Map Output
       tabsetPanel(
-        tabPanel(title = "Map",
+        tabPanel(title = "Location of Deaths",
                  br(),
                  br(),
                  selectInput("region",
@@ -108,7 +108,10 @@ ui <- fluidPage(
                               label = "Select variable for size of points:",
                               choices = c("Percent non-Hispanic White",
                                           "Percent Black",
-                                          "Percent Hispanic/Latinx"))),
+                                          "Percent Hispanic/Latinx")),
+                 br(),
+                 br(),
+                 plotOutput("density")),
         tabPanel(title = "Cause of Death",
                  br(),
                  br(),
@@ -512,7 +515,7 @@ server <- function(input, output) {
       # filter by city name selected
       filter(city == input$city_names) %>% 
       # keep only name, city, state, month, day, year, age, gender and raceethnicity columns
-      select(name, city, state, month, day, year, age, gender, raceethnicity)
+      select(name, city, state, lawenforcementagency, month, day, year, age, gender, raceethnicity)
   })
   
   # Create Race/Gender Bargraph Output ---------
@@ -656,9 +659,9 @@ server <- function(input, output) {
   # create reactive object to map radio button options to legend titles
   legend_title <- reactive({
     switch(input$census_var,
-           "Percent non-Hispanic White" = "% of victim's\ncensus tract\npopulation that is non-Hispanic White",
-           "Percent Black" = "% of victim's\ncensus tract\npop that is Black",
-           "Percent Hispanic/Latinx" = "% of victim's\ncensus tract\npop that is Hispanic/Latinx"
+           "Percent non-Hispanic White" = "% of census tract\npopulation that is non-Hispanic White",
+           "Percent Black" = "% of census tract\npop that is Black",
+           "Percent Hispanic/Latinx" = "% of census tract\npop that is Hispanic/Latinx"
     )
   })
   
@@ -674,8 +677,8 @@ server <- function(input, output) {
       theme_minimal() +
       # change axis labels, add title
       labs(
-        title = "Percentage of College Graduates\nby Median Household Income of Victim's Census Tract",
-        x = "median household income of census tract",
+        title = "Percentage of College Graduates\nby Median Household Income in Census Tract where Victim was Killed",
+        x = "median household income of census tract  (dollars)",
         y = "% of 25+ population in\ncensus tract with BA or higher"
       ) +
       # change x-axis scale
@@ -694,6 +697,35 @@ server <- function(input, output) {
       theme(
         plot.title = element_text(size = 16, face = "bold", hjust = 0.5)
       )
+  })
+  
+
+  # Income by Race Density Plot ---------------------------------------------
+
+  output$density <- renderPlot({
+    ggplot(data = police, aes(h_income, fill = raceethnicity, color = raceethnicity)) +
+      geom_density(alpha = 0.2) +
+      scale_x_continuous(
+        labels = label_comma()
+      ) +
+      scale_color_brewer(
+        palette = "Set1",
+        limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+      ) +
+      scale_fill_brewer(
+        palette = "Set1",
+        limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
+      ) +
+      theme_minimal() +
+      theme(
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.5)
+      ) +
+      labs(
+        x = "median household income of census tract (dollars)",
+        fill = "Race of Victim",
+        color = "Race of Victim",
+        title = "Income of Census Tract in which Victim was Killed\nby Race of Victim"
+      ) 
   })
   
   # Create Cause of Death Barplot-----------------------------
