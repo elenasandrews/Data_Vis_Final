@@ -34,8 +34,8 @@ ui <- fluidPage(
         em("467"),
         "people were killed at the hands of police officers. This app provides
         detailed graphics and tables about those who were killed by police between January
-        and June of 2015 in an attempt to raise awareness about police violence, 
-        and bring the country closer to creating communities where all feel safe and welcome."),
+        and June of 2015 in an attempt to raise awareness about police violence, understand who 
+        in America is most suseptible to that violence, and bring the country closer to creating communities where all feel safe and welcome."),
       div("To navigate through the sections of the app, click on the labeled tabs.", style = "color:red"),
       h2("Data"),
       p("The data used in this app was obtained from FiveThirtyEight, who utilized the data for their 2015 article", 
@@ -49,7 +49,8 @@ ui <- fluidPage(
     ),
     # Main Panel
     mainPanel(
-      # Tab One: Drop-Down Menu Input, Map Output
+      # Tab One: Drop-Down Menu Input, Map Output,
+      # UI output for City drop-down menu and City Output
       tabsetPanel(
         tabPanel(title = "Location of Deaths",
                  br(),
@@ -97,21 +98,35 @@ ui <- fluidPage(
                                        animate = TRUE))
                  ),
                  ),
-        # Tab Three: Radio Button Input with Scatterplot Output
+        # Tab Three: Radio Button Input with Scatterplot Output,
+        # Selectbar Input with Histogram Output, and Density Plot Output
         tabPanel(title = "Census Tract Data",
                  br(),
                  br(),
                  plotOutput("scatterplot"),
                  br(),
                  br(),
-                 radioButtons("census_var",
+                 radioButtons("share_var",
                               label = "Select variable for size of points:",
                               choices = c("Percent non-Hispanic White",
                                           "Percent Black",
                                           "Percent Hispanic/Latinx")),
                  br(),
                  br(),
+                 plotOutput("histogram2"),
+                 br(),
+                 br(),
+                 selectInput("census_var",
+                             label = "Select variable for histogram:",
+                             choices = c("Median household income",
+                                         "Percent non-Hispanic White",
+                                         "Percent Black",
+                                         "Percent Hispanic/Latinx"
+                                         )),
+                 br(),
+                 br(),
                  plotOutput("density")),
+        # Tab Four: Bargraph Output with Radio Button Input
         tabPanel(title = "Cause of Death",
                  br(),
                  br(),
@@ -132,7 +147,8 @@ server <- function(input, output) {
   # Map Output -----
   output$map <- renderPlot({
     
-    # Define plot using an if, else if, else statement
+    # Define the different plots for each region
+    # using an if, else if, else statement
     if (input$region == "West"){
       
     # filter police_geometry (dataset with tigris geometric maping data)
@@ -231,33 +247,43 @@ server <- function(input, output) {
         )
       
     } else if (input$region == "Southwest") {
+      # filter police_geometry (dataset with tigris geometric maping data)
+      # by states in the vector
       police_geometry %>% 
         filter(state %in% c("AZ", "NM", "TX", "OK")) %>% 
+        # plot state boundaries
         ggplot() +
         geom_sf(aes(geometry = geometry)) +
         coord_sf() +
+        # add points for each victim, mapping raceethnicity to color and shape
         geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
                    alpha = 0.95, size = 3) +
+        # add void theme
         theme_void() +
+        # change the color palette of the points, change order of points
         scale_color_brewer(
           palette = "Set1",
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # manually set the shapes, change order of shapes to match points
         scale_shape_manual(
           values = c(4, 6, 5, 0, 2, 1),
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # Change title, legend label, and add caption
         labs(
           title = "Locations of Police Killings in Southwest",
           color = "Race of\nVictim",
           shape = "Race of\nVictim",
           caption = "Each shape represents one victim"
         )  +
+        # add text for Pheonix
         annotate(
           geom = "text",
           x = -114, y = 30.7,
           label = "Phoenix"
         ) +
+        # add arrow for Pheonix
         annotate(
           geom = "curve", 
           x = -114, y = 31, 
@@ -266,11 +292,13 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # add text for Houston
         annotate(
           geom = "text",
           x = -94.5, y = 26.8,
           label = "Houston"
         ) +
+        # add arrow for Houston
         annotate(
           geom = "curve", 
           x = -94.5, y = 27, 
@@ -279,12 +307,14 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # add text for Dallas
         annotate(
           geom = "text",
           x = -98, y = 31,
           label = "Dallas",
           hjust = 1
         ) +
+        # add arrow for Dallas
         annotate(
           geom = "curve", 
           x = -98, y = 31, 
@@ -293,12 +323,14 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # add text for Oklahoma City
         annotate(
           geom = "text",
           x = -97, y = 38,
           label = "Oklahoma City",
           hjust = 0
         ) +
+        # add arrow for Oklahoma City
         annotate(
           geom = "curve", 
           x = -97, y = 38, 
@@ -307,6 +339,7 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # change elements of title
         theme(
           plot.title = element_text(face = "bold", hjust = 0.5)
         )
@@ -479,7 +512,7 @@ server <- function(input, output) {
    
   # Cities Select Bar and Table --------------
   
-  # create a reactive object changing region label to a vector of state abbreviations
+  # create a reactive object that changes the region label to a vector of state abbreviations
   region <- reactive({switch(input$region,
                    "West" = c("CA", "OR", "WA", "NV", "UT", "CO", "MT", "ID", "WY"),
                    "Southwest" = c("AZ", "NM", "TX", "OK"),
@@ -494,7 +527,7 @@ server <- function(input, output) {
     
     # create cities dataset
     cities <- police %>% 
-      # filter by states in the vector selected
+      # filter by states in the region selected
       filter(state %in% region()) %>% 
       # get the unique city names
       distinct(city)
@@ -520,12 +553,12 @@ server <- function(input, output) {
   
   # Create Race/Gender Bargraph Output ---------
   
-  # create data-set of counts of levels of gender
+  # create data-set of counts of the levels of gender
   # for labels on gender bargraph
   gender_counts <- police %>% 
     count(gender)
   
-  # create data-set of counts of levels of raceethnicity
+  # create data-set of counts of the levels of raceethnicity
   # for labels on race bargraph
   race_counts <- police %>% 
     count(raceethnicity)
@@ -640,7 +673,7 @@ server <- function(input, output) {
   # Census Tract Scatterplot --------------
   # create reactive object to map radio button options to variables in police
   size <- reactive({
-    switch(input$census_var,
+    switch(input$share_var,
            "Percent non-Hispanic White" = police$share_white,
            "Percent Black" = police$share_black,
            "Percent Hispanic/Latinx" = police$share_hispanic
@@ -649,7 +682,7 @@ server <- function(input, output) {
   
   # create reactive object to map radio button options to fill colors
   fill_color <- reactive({
-    switch(input$census_var,
+    switch(input$share_var,
            "Percent non-Hispanic White" = "#630436",
            "Percent Black" = "#228B22",
            "Percent Hispanic/Latinx" = "#00316E"
@@ -658,7 +691,7 @@ server <- function(input, output) {
   
   # create reactive object to map radio button options to legend titles
   legend_title <- reactive({
-    switch(input$census_var,
+    switch(input$share_var,
            "Percent non-Hispanic White" = "% of census tract\npopulation that is non-Hispanic White",
            "Percent Black" = "% of census tract\npop that is Black",
            "Percent Hispanic/Latinx" = "% of census tract\npop that is Hispanic/Latinx"
@@ -681,11 +714,12 @@ server <- function(input, output) {
         x = "median household income of census tract  (dollars)",
         y = "% of 25+ population in\ncensus tract with BA or higher"
       ) +
-      # change x-axis scale
+      # change elements x-axis scale
       scale_x_continuous(
         labels = comma,
         breaks = breaks_width(25000)
       ) +
+      # change elements of y-axis scale
       scale_y_continuous(
         labels = label_percent()
       ) +
@@ -700,26 +734,85 @@ server <- function(input, output) {
   })
   
 
+  # Histogram of 4 Census Variables -----------------------------------------
+  
+  # create reactive object to map select bar input to variable from police
+  hist_var <- reactive({
+    switch(input$census_var,
+           "Median household income" = police$h_income,
+           "Percent non-Hispanic White" = police$share_white,
+           "Percent Black" = police$share_black,
+           "Percent Hispanic/Latinx" = police$share_hispanic
+    )
+  })
+  
+  # create reactive object to map select bar input to an axis label
+  axis_label <- reactive({
+    switch(input$census_var,
+           "Median household income" = "median household income of census tract in which victim was killed",
+           "Percent non-Hispanic White" = "percent non-Hispanic white population in census tract in which victim was killed",
+           "Percent Black" = "percent black population in census tract in which victim was killed",
+           "Percent Hispanic/Latinx" = "percent hispanic/latinx population in census tract in which victim was killed"
+    )
+  })
+  
+  # create reactive object to map radio button options to fill colors
+  fill_color2 <- reactive({
+    switch(input$census_var,
+           "Median household income" = "black",
+           "Percent non-Hispanic White" = "#630436",
+           "Percent Black" = "#228B22",
+           "Percent Hispanic/Latinx" = "#00316E"
+    )
+  })
+  
+  # output
+  output$histogram2 <- renderPlot({
+    # create histogram
+    ggplot(police, aes(hist_var())) +
+      # set outline color of bars to white and fill color to reactive object above
+      geom_histogram(color = "white", fill = fill_color2()) +
+      # change axis label and add title
+      labs(
+        x = axis_label(),
+        title = paste("Distribution of", input$census_var, sep = " ")
+      ) +
+      # add minimal theme
+      theme_minimal() +
+      # edit elements of title
+      theme(
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.5)
+      )
+  })
+  
   # Income by Race Density Plot ---------------------------------------------
-
+  
+  # output
   output$density <- renderPlot({
+    # create graph
     ggplot(data = police, aes(h_income, fill = raceethnicity, color = raceethnicity)) +
       geom_density(alpha = 0.2) +
+      # change elements of x-axis scale
       scale_x_continuous(
         labels = label_comma()
       ) +
+      # change the color palette and order of color variable
       scale_color_brewer(
         palette = "Set1",
         limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
       ) +
+      # change the color palette and order of fill variable as well (keeps legends the same)
       scale_fill_brewer(
         palette = "Set1",
         limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
       ) +
+      # add minimal theme
       theme_minimal() +
+      # change elements of title
       theme(
         plot.title = element_text(size = 16, face = "bold", hjust = 0.5)
       ) +
+      # add title, change x-axis and legend titles
       labs(
         x = "median household income of census tract (dollars)",
         fill = "Race of Victim",
@@ -737,14 +830,20 @@ server <- function(input, output) {
   
   # create output
   output$cause <- renderPlot({
+    # code for graph is input$fill_var = "None"
     if (input$fill_var == "None") {
       ggplot(police, aes(fct_rev(fct_infreq(cause)))) +
+        # create bargraph without legend
         geom_bar(aes(fill = cause), show.legend = FALSE) +
+        # flip coordinates
         coord_flip() +
+        # change x and y axis labels, add title
         labs(
           x = "Cause of Death",
-          y = "Number of Victims"
+          y = "Number of Victims",
+          title = "How Victim was Killed"
         ) +
+        # change colors of each level of bargraph
         scale_fill_manual(
           values = c("Gunshot" = "dark red", 
                      "Taser" = "black", 
@@ -752,36 +851,57 @@ server <- function(input, output) {
                      "Struck by vehicle" = "black",  
                      "Unknown" = "black")
         ) +
+        # add labels to bars
         geom_label(data = cause_counts, aes(label = n, y = n), show.legend = FALSE) +
-        theme_minimal() 
-    } else if (input$fill_var == "Armed"){
-      ggplot(police, aes(cause, fill = armed)) +
-        geom_bar(position = "fill") +
-        coord_flip() +
+        # set theme as minimal
         theme_minimal() +
-        labs(
-          x = "Cause of Death",
-          y = "Percentage of Victims",
-          title = "Cause of Death By How Victim was Armed",
-          fill = "Weapon Carried\nby Victim"
-        ) +
+        # change elements of title
         theme(
           plot.title = element_text(size = 16, face = "bold", hjust = .5)
         )
-    } else {
-      ggplot(police, aes(cause, fill = raceethnicity)) +
+    # Code for graph is input$fill_var = Armed
+    } else if (input$fill_var == "Armed"){
+      ggplot(police, aes(cause, fill = armed)) +
+        # set position to fill, making a proportional bar-graph
         geom_bar(position = "fill") +
+        # flip coordinates
         coord_flip() +
+        # add minimal theme
         theme_minimal() +
+        # change x and y axis labels and legend label,
+        # add title
         labs(
           x = "Cause of Death",
           y = "Percentage of Victims",
-          title = "Cause of Death By Race of Victim",
+          title = "How Victim was Killed By How Victim was Armed",
+          fill = "Weapon Carried\nby Victim"
+        ) +
+        # change elements of title
+        theme(
+          plot.title = element_text(size = 16, face = "bold", hjust = .5)
+        )
+    # Code for graph is input$fill_var = Race
+    } else {
+      ggplot(police, aes(cause, fill = raceethnicity)) +
+        # set position to fill, making a proportional bar-graph
+        geom_bar(position = "fill") +
+        # flip coordinates
+        coord_flip() +
+        # add minimal theme
+        theme_minimal() +
+        # change x and y axis labels and legend label,
+        # add title
+        labs(
+          x = "Cause of Death",
+          y = "Percentage of Victims",
+          title = "How Victim Was Killed By Race of Victim",
           fill = "Race"
         ) +
+        # change color palette and order of levels of fill variable
         scale_fill_brewer(palette = "Set1",
                           limits = c("White", "Hispanic/Latino", "Black", "Native American", 
                                      "Unknown", "Asian/Pacific Islander")) +
+        # change elements of title
         theme(
           plot.title = element_text(size = 16, face = "bold", hjust = .5)
         )

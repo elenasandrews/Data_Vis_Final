@@ -598,3 +598,17 @@ ggplot(data = police, aes(h_income, fill = raceethnicity, color = raceethnicity)
     color = "Race of Victim",
     title = "Income of Census Tract by Race of Victim"
   ) 
+
+
+# Density Plot of Census Tract Population Percentages ---------------------
+ggplot(police, aes(share_white)) +
+  geom_histogram(bin_width = 3)
+
+ggplot(police, aes(share_black)) +
+  geom_histogram()
+
+ggplot(police, aes(share_hispanic)) +
+  geom_histogram()
+
+ggplot(police, aes(h_income)) +
+  geom_histogram()
