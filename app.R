@@ -44,8 +44,9 @@ ui <- fluidPage(
         from two different sources: the Guardian's data-base on police murders in the United States 
         and the 2015 American Community Survey conducted by the United States Census Bureau.
         To access the GitHub repo where the data was found,",
-        a(href = "https://github.com/fivethirtyeight/data/tree/master/police-killings", "click here."))
-      
+        a(href = "https://github.com/fivethirtyeight/data/tree/master/police-killings", "click here.")),
+      h2("Creator"),
+      p("Elena Andrews, Data Visualization (STAT 302), Spring 2021")
     ),
     # Main Panel
     mainPanel(
