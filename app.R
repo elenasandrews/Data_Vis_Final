@@ -118,7 +118,7 @@ ui <- fluidPage(
                  br(),
                  selectInput("census_var",
                              label = "Select variable for histogram:",
-                             choices = c("Median household income",
+                             choices = c("Median Household Income",
                                          "Percent non-Hispanic White",
                                          "Percent Black",
                                          "Percent Hispanic/Latinx"
@@ -344,34 +344,44 @@ server <- function(input, output) {
           plot.title = element_text(face = "bold", hjust = 0.5)
         )
     } else if (input$region == "Southeast") {
+      # filter police_geometry (dataset with tigris geometric maping data)
+      # by states in the vector
       police_geometry %>% 
         filter(state %in% c("AR", "LA", "MS", "AL", "FL", "TN", "KY", "GA", "SC", "NC", "VA", "WV")) %>% 
+        # plot state boundaries
         ggplot() +
         geom_sf(aes(geometry = geometry)) +
         coord_sf() +
+        # add points for each victim, mapping raceethnicity to color and shape
         geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
                    alpha = 0.95, size = 3) +
+        # add void theme
         theme_void() +
+        # change the color palette of the points, change order of points
         scale_color_brewer(
           palette = "Set1",
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # manually set the shapes, change order of shapes to match points
         scale_shape_manual(
           values = c(4, 6, 5, 0, 2, 1),
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # Change title, legend label, and add caption
         labs(
           title = "Locations of Police Killings in Southeast",
           color = "Race of\nVictim",
           shape = "Race of\nVictim",
           caption = "Each shape represents one victim"
         ) +
+        # add text for Atlanta
         annotate(
           geom = "text",
           x = -84, y = 32.6,
           label = "Atlanta",
           hjust = .5
         ) +
+        # add arrow for Atlanta
         annotate(
           geom = "curve", 
           x = -84, y = 32.6, 
@@ -380,12 +390,14 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # add text for Orlando
         annotate(
           geom = "text",
           x = -79, y = 28,
           label = "Orlando",
           hjust = 0
         ) +
+        # add arrow for Orlando
         annotate(
           geom = "curve", 
           x = -79, y = 28, 
@@ -394,26 +406,35 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # change elements of title
         theme(
           plot.title = element_text(face = "bold", hjust = 0.5)
         )
     } else if (input$region == "Midwest") {
+      # filter police_geometry (dataset with tigris geometric maping data)
+      # by states in the vector
       police_geometry %>% 
         filter(state %in% c("ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "IN", "MI", "OH")) %>% 
+        # plot state boundaries
         ggplot() +
         geom_sf(aes(geometry = geometry)) +
         coord_sf() +
+        # add points for each victim, mapping raceethnicity to color and shape
         geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
                    alpha = 0.95, size = 3) +
+        # add void theme
         theme_void() +
+        # change the color palette of the points, change order of points
         scale_color_brewer(
           palette = "Set1",
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # manually set the shapes, change order of shapes to match points
         scale_shape_manual(
           values = c(4, 6, 5, 0, 2, 1),
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # Change title, legend label, and add caption
         labs(
           title = "Locations of Police Killings in Midwest",
           color = "Race of\nVictim",
@@ -421,12 +442,14 @@ server <- function(input, output) {
           caption = "Each shape represents one victim\nSouth Dakota and North Dakota absent because these states had no
           police killings in 2015"
         ) +
+        # add text for Minneapolis
         annotate(
           geom = "text",
           x = -98, y = 45,
           label = "Minneapolis",
           hjust = 1
         ) +
+        # add arrow for Minneapolis
         annotate(
           geom = "curve", 
           x = -98, y = 45, 
@@ -435,12 +458,14 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # add text for Chicago
         annotate(
           geom = "text",
           x = -88, y = 41,
           label = "Chicago",
           hjust = 1
         ) +
+        # add arrow for Chicago
         annotate(
           geom = "curve", 
           x = -88, y = 41, 
@@ -449,26 +474,35 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # change elements of title
         theme(
           plot.title = element_text(face = "bold", hjust = 0.5)
         )
     } else {
+      # filter police_geometry (dataset with tigris geometric maping data)
+      # by states in the vector
       police_geometry %>% 
         filter(state %in% c("NY", "PA", "MD", "DC", "DE", "NJ", "CT", "MA", "NH", "VT", "ME")) %>%
+        # plot state boundaries
         ggplot() +
         geom_sf(aes(geometry = geometry)) +
         coord_sf() +
+        # add points for each victim, mapping raceethnicity to color and shape
         geom_point(aes(x = longitude, y = latitude, color = raceethnicity, shape = raceethnicity),
                    alpha = 0.95, size = 3) +
+        # add void theme
         theme_void() +
+        # change the color palette of the points, change order of points
         scale_color_brewer(
           palette = "Set1",
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # manually set the shapes, change order of shapes to match points
         scale_shape_manual(
           values = c(4, 6, 5, 0, 2, 1),
           limits = c("White", "Hispanic/Latino", "Black", "Native American", "Unknown", "Asian/Pacific Islander")
         ) +
+        # Change title, legend label, and add caption
         labs(
           title = "Locations of Police Killings in Northeast",
           color = "Race of\nVictim",
@@ -476,12 +510,15 @@ server <- function(input, output) {
           caption = "Each shape represents one victim\nVermont and Rhode Island absent because these states had no
           police killings in 2015"
         ) +
+        
+        # add text for New York City
         annotate(
           geom = "text",
           x = -72, y = 39.5,
           label = "New York City",
           hjust = 0
         ) +
+        # add arrow for New York City
         annotate(
           geom = "curve", 
           x = -72, y = 39.5, 
@@ -490,12 +527,14 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # add text for Baltimore
         annotate(
           geom = "text",
           x = -78, y = 38,
           label = "Baltimore",
           hjust = 1
         ) +
+        # add arrow for Baltimore
         annotate(
           geom = "curve", 
           x = -78, y = 38, 
@@ -504,6 +543,7 @@ server <- function(input, output) {
           arrow = arrow(length = unit(2, "mm")),
           color = "black"
         ) +
+        # change elements of title
         theme(
           plot.title = element_text(face = "bold", hjust = 0.5)
         )
@@ -739,7 +779,7 @@ server <- function(input, output) {
   # create reactive object to map select bar input to variable from police
   hist_var <- reactive({
     switch(input$census_var,
-           "Median household income" = police$h_income,
+           "Median Household Income" = police$h_income,
            "Percent non-Hispanic White" = police$share_white,
            "Percent Black" = police$share_black,
            "Percent Hispanic/Latinx" = police$share_hispanic
@@ -749,7 +789,7 @@ server <- function(input, output) {
   # create reactive object to map select bar input to an axis label
   axis_label <- reactive({
     switch(input$census_var,
-           "Median household income" = "median household income of census tract in which victim was killed",
+           "Median Household Income" = "median household income of census tract in which victim was killed",
            "Percent non-Hispanic White" = "percent non-Hispanic white population in census tract in which victim was killed",
            "Percent Black" = "percent black population in census tract in which victim was killed",
            "Percent Hispanic/Latinx" = "percent hispanic/latinx population in census tract in which victim was killed"
@@ -759,7 +799,7 @@ server <- function(input, output) {
   # create reactive object to map radio button options to fill colors
   fill_color2 <- reactive({
     switch(input$census_var,
-           "Median household income" = "black",
+           "Median Household Income" = "black",
            "Percent non-Hispanic White" = "#630436",
            "Percent Black" = "#228B22",
            "Percent Hispanic/Latinx" = "#00316E"
