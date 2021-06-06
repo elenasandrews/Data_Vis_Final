@@ -1,2 +1,2 @@
 # Data Visualization Final Project
-Deaths at the Hands of the American Police in 2015
+Shiny app conveying information about deaths at the Hands of the American Police in 2015.
