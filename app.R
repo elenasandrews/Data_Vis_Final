@@ -9,7 +9,6 @@ library(maps)
 library(sf)
 library(janitor)
 library(rgeos)
-# install.packages
 library(thematic)
 library(showtext)
 

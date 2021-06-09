@@ -1,0 +1,92 @@
+---
+title: "Police Data Codebook"
+author: "Elena Andrews"
+date: "6/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Description
+
+This is the main dataset used for the Shiny App. It contains data obtained from FiveThirtyEight, who compiled data from the Guardian and the 2015 American Community Survey, on those people killed by the police in the United States in the first six months of 2015.
+
+## Usage
+
+`police`
+
+## Format
+
+Tibble
+
+## Variables
+
+`name` = name of deceased (source: Guardian)
+
+`age` = age of deceased (source: Guardian)
+
+`gender` = gender of deceased (source: Guardian)
+
+`raceethnicity` = race/ethnicity of deceased (source: Guardian)
+
+`month` = month of killing (source: Guardian)
+
+`day` = day of killing (source: Guardian)
+ 
+`year` = year of killing (source: Guardian)
+
+`streetaddress` = address/intersection where killing occurred (source: Guardian)
+
+`city` = city where killing occurred (source: Guardian)
+
+`state` = state where killing occurred (source: Guardian)
+
+`latitude` = latitude, geocoded from address
+
+`longitude` = longitude, geocoded from address
+
+`state_fp` = state FIPS code (source: ACS/Census)
+
+`county_fp` = county FIPS code (source: ACS/Census)
+
+`tract_ce` = tract ID code (source: ACS/Census)
+
+`geo_id` = combined tract ID code
+
+`county_id` = combined county ID code
+
+`namelsad` = tract description (source: ACS/Census)
+
+`lawenforcementagency` = law enforcement agency involved in killing (source: Guardian)
+
+`cause` = cause of death (source: Guardian)
+
+`armed` = how/whether deceased was armed (source: Guardian)
+
+`pop` = tract population (source: ACS/Census)
+
+`share_white` = share of tract-level population that is non-Hispanic white (source: ACS/Census)
+
+`share_black` = share of tract-level population that is Black (source: ACS/Census)
+
+`share_hispanic` = share of tract-level population that is Hispanic/Latino (source: ACS/Census)
+
+`p_income` = tract-level median personal income (source: ACS/Census)
+
+`h_income` = tract-level median household income (source: ACS/Census)
+
+`county_income` = county-level median household income (source: ACS/Census)
+
+`comp_income` = `h_income` / `county_income` (calculated from Census)
+
+`county_bucket` = household income, quintile within county (calculated from Census)
+
+`nat_bucket` = household income, quintile nationally (calculated from Census)
+
+`pov` = tract-level poverty rate (official) (source: ACS/Census)
+
+`urate` = tract-level unemployment rate (calculated from Census)
+
+`college` = share of 25+ population with BA or higher (calculated from Census)
